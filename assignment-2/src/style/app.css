@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  .input {
+    @apply whitespace-nowrap w-full rounded-md border border-gray-200 bg-white p-2 font-normal shadow-sm xl:hover:border-gray-300;
+  }
+
+  .input-title {
+    @apply my-2 mr-3 w-1/5 text-right;
+  }
+
+  .input-lable {
+    @apply flex w-full flex-row items-center my-2;
+  }
+}

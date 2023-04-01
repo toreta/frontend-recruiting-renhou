@@ -1,64 +1,60 @@
-import { Invoice, charge, Payment, Receipt } from './charge';
+// * ------------------------------
+// *
+// * Unit Test
+// *
+// * ------------------------------
 
-describe('charge', () => {
-  const cashOnly: Payment[] = [{ type: 'CASH', amount: 10000 }];
-  const multipleCash: Payment[] = [
-    { type: 'CASH', amount: 5000 },
-    { type: 'CASH', amount: 5000 },
-  ];
-  const couponOnly: Payment[] = [{ type: 'COUPON', amount: 10000 }];
-  const cashAndCoupon: Payment[] = [
-    { type: 'CASH', amount: 5000 },
-    { type: 'COUPON', amount: 5000 },
-  ];
-  const cashAndPercentageCoupon: Payment[] = [
-    { type: 'CASH', amount: 5000 },
-    { type: 'COUPON', percentage: 50 },
-  ];
+import { charge } from './charge';
+import {
+  cashOnly,
+  multipleCash,
+  couponOnly,
+  cashAndCoupon,
+  cashAndPercentageCoupon,
+  invoice5000,
+  invoice8000,
+  invoice10000,
+  invoice12000,
+  receipt8000change2000,
+  receipt8000change0,
+  receipt10000change0,
+} from './charge.case';
 
-  it('過不足なく支払った場合、お釣りは0でレシートが返される', () => {
-    const invoice: Invoice = { total: 10000 };
-    const receipt: Receipt = { total: 10000, deposit: 10000, change: 0 };
-
+describe('charge', (): void => {
+  it('過不足なく支払った場合、お釣りは0でレシートが返される', (): void => {
     [cashOnly, multipleCash, couponOnly, cashAndCoupon, cashAndPercentageCoupon].forEach(
-      (payments) => {
-        expect(charge(invoice, payments)).toEqual(receipt);
+      (payments): void => {
+        expect(charge(invoice10000, payments)).toEqual(receipt10000change0);
       },
     );
   });
-  it('金額が不足している場合はエラーを起こす', () => {
-    const invoice: Invoice = { total: 12000 };
 
+  it('金額が不足している場合はエラーを起こす', (): void => {
     [cashOnly, multipleCash, couponOnly, cashAndCoupon, cashAndPercentageCoupon].forEach(
-      (payments) => {
-        expect(() => {
-          charge(invoice, payments);
+      (payments): void => {
+        expect((): void => {
+          charge(invoice12000, payments);
         }).toThrowError('Shortage');
       },
     );
   });
-  it('現金での過払いはお釣りを返す', () => {
-    const invoice: Invoice = { total: 8000 };
-    const receipt: Receipt = { total: 8000, deposit: 10000, change: 2000 };
 
-    [cashOnly, multipleCash, cashAndCoupon].forEach((payments) => {
-      expect(charge(invoice, payments)).toEqual(receipt);
+  it('現金での過払いはお釣りを返す', (): void => {
+    [cashOnly, multipleCash, cashAndCoupon].forEach((payments): void => {
+      expect(charge(invoice8000, payments)).toEqual(receipt8000change2000);
     });
   });
-  it('クーポンでの過払いはお釣りを返さない', () => {
-    const invoice: Invoice = { total: 8000 };
-    const receipt: Receipt = { total: 8000, deposit: 10000, change: 0 };
 
+  it('クーポンでの過払いはお釣りを返さない', (): void => {
     [couponOnly].forEach((payments) => {
-      expect(charge(invoice, payments)).toEqual(receipt);
+      expect(charge(invoice8000, payments)).toEqual(receipt8000change0);
     });
   });
-  it('クーポンで全額払える場合に現金も含まれていればエラーを起こす', () => {
-    const invoice: Invoice = { total: 5000 };
 
+  it('クーポンで全額払える場合に現金も含まれていればエラーを起こす', (): void => {
     [cashAndCoupon].forEach((payments) => {
-      expect(() => {
-        charge(invoice, payments);
+      expect((): void => {
+        charge(invoice5000, payments);
       }).toThrowError('OverCharge');
     });
   });
